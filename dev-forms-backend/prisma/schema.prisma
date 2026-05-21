@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  JUDGE
+  DEV
+}
+
+model User {
+  id           Int          @id @default(autoincrement())
+  name         String
+  email        String       @unique
+  passwordHash String
+  role         Role         @default(JUDGE)
+  
+  forms        Form[]       @relation("FormCreator")
+  evaluations  Evaluation[]
+  
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+model Form {
+  id          Int          @id @default(autoincrement())
+  title       String
+  slug        String       @unique
+  isOpen      Boolean      @default(false)
+  
+  creatorId   Int
+  creator     User         @relation("FormCreator", fields: [creatorId], references: [id])
+  submissions Submission[]
+  
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Submission {
+  id          Int          @id @default(autoincrement())
+  formId      Int
+  projectName String
+  description String
+  leaderEmail String
+  teamMembers Json         // Ex: [{ "name": "Dev" }, { "name": "Designer" }]
+  links       Json         // Ex: ["github.com/repo"]
+  files       Json?        // Armazena URLs finais dos arquivos (S3, etc) pós-processamento
+  status      String       @default("PENDING") // PENDING, PROCESSING, PROCESSED, ERROR
+  
+  form        Form         @relation(fields: [formId], references: [id])
+  evaluations Evaluation[]
+  
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Evaluation {
+  id                  Int        @id @default(autoincrement())
+  submissionId        Int
+  judgeId             Int
+  criterionInnovation Float
+  criterionDesign     Float
+  criterionTechnical  Float
+  notes               String?
+  finalScore          Float
+  
+  submission          Submission @relation(fields: [submissionId], references: [id])
+  judge               User       @relation(fields: [judgeId], references: [id])
+  
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+
+  @@unique([submissionId, judgeId])
+}

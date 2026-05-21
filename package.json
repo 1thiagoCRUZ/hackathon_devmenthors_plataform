@@ -1,0 +1,13 @@
+{
+  "name": "forms-hackathon-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev:backend": "cd dev-forms-backend && npm run dev",
+    "dev:frontend": "cd front-hackathon && npm run dev",
+    "dev": "concurrently -c \"blue,green\" \"npm run dev:backend\" \"npm run dev:frontend\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
