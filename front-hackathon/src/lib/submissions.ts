@@ -14,7 +14,7 @@ export type Submission = {
   leaderEmail?: string; // a api manda de volta?
   members: { id?: string; name: string }[];
   teamMembers?: any; // para suportar retorno da api
-  materials: { id?: string; type: MaterialType; url: string }[];
+  materials: { id?: string; type: MaterialType; url: string; name?: string }[];
   links?: string[]; // retorno da api
   createdAt: string;
 };
@@ -129,15 +129,40 @@ export async function loadSubmissions(slug: string = 'hack-2026'): Promise<Submi
     if (!res.ok) return [];
     const data = await res.json();
     // Adaptar o retorno da API para a interface do frontend
-    return data.map((d: any) => ({
-      id: String(d.id),
-      projectName: d.projectName,
-      description: d.description,
-      representativeEmail: d.leaderEmail,
-      members: Array.isArray(d.teamMembers) ? d.teamMembers : typeof d.teamMembers === 'string' ? JSON.parse(d.teamMembers) : [],
-      materials: Array.isArray(d.links) ? d.links.map((url: string, i: number) => ({ id: String(i), type: 'other', url })) : typeof d.links === 'string' ? JSON.parse(d.links).map((url: string, i: number) => ({ id: String(i), type: 'other', url })) : [],
-      createdAt: d.createdAt
-    }));
+    return data.map((d: any) => {
+      const teamMembers = Array.isArray(d.teamMembers)
+        ? d.teamMembers
+        : typeof d.teamMembers === 'string'
+          ? JSON.parse(d.teamMembers)
+          : [];
+
+      const linksArray: string[] = Array.isArray(d.links)
+        ? d.links
+        : typeof d.links === 'string'
+          ? JSON.parse(d.links)
+          : [];
+
+      const filesArray: any[] = Array.isArray(d.files)
+        ? d.files
+        : typeof d.files === 'string'
+          ? JSON.parse(d.files)
+          : [];
+
+      const linkMaterials = linksArray.map((url: string, i: number) => ({ id: `link-${d.id}-${i}`, type: 'other', url }));
+      const fileMaterials = filesArray.map((f: any, i: number) => ({ id: `file-${d.id}-${i}`, type: 'other', url: f.url, name: f.name }));
+
+      const materials = [...linkMaterials, ...fileMaterials];
+
+      return {
+        id: String(d.id),
+        projectName: d.projectName,
+        description: d.description,
+        representativeEmail: d.leaderEmail,
+        members: teamMembers,
+        materials,
+        createdAt: d.createdAt,
+      };
+    });
   } catch {
     return [];
   }

@@ -395,11 +395,18 @@ function FormBody({ slug }: { slug: string }) {
 
             <button
               type="button"
-              onClick={addMember}
-              className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border py-3 text-sm font-medium text-muted-foreground transition-all hover:scale-[1.01] hover:border-primary/60 hover:bg-primary/5 hover:text-primary active:scale-100"
+              onClick={() => {
+                if (members.length >= 5) {
+                  toast.error('Máximo de 5 integrantes.');
+                  return;
+                }
+                addMember();
+              }}
+              disabled={members.length >= 5}
+              className={`flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed py-3 text-sm font-medium transition-all active:scale-100 ${members.length >= 5 ? 'border-border/40 text-muted-foreground/60 cursor-not-allowed bg-background' : 'border-border hover:scale-[1.01] hover:border-primary/60 hover:bg-primary/5 hover:text-primary'}`}
             >
               <UserPlus className="h-4 w-4" />
-              Adicionar integrante
+              {members.length >= 5 ? 'Limite atingido (5)' : 'Adicionar integrante'}
             </button>
           </div>
         </Card>

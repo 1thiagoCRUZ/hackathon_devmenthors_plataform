@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import {
   Users,
-  Calendar,
   ExternalLink,
-  Trash2,
+  
   Inbox,
   Code,
   Globe,
@@ -29,7 +28,6 @@ import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { AppLayout, PageHeader } from "@/components/AppLayout";
 import {
-  deleteSubmission,
   getForm,
   loadSubmissions,
   toggleFormStatus,
@@ -71,13 +69,6 @@ const initials = (name: string) =>
     .map((n) => n[0]?.toUpperCase() ?? "")
     .join("") || "?";
 
-const formatDate = (iso: string) =>
-  new Date(iso).toLocaleString("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 
 function AdminPage() {
   const [items, setItems] = useState<Submission[]>([]);
@@ -140,13 +131,7 @@ function AdminPage() {
     );
   });
 
-  const handleDelete = async (id: string) => {
-    await deleteSubmission(id);
-    setItems((all) => all.filter((s) => s.id !== id));
-    toast.success("Projeto removido.");
-    // Clear cache so next load gets fresh data
-    sessionStorage.removeItem('adminData');
-  };
+  // delete handler removed (not used in UI)
 
   const handleToggleStatus = async (field: keyof FormInfo, value: boolean) => {
     if (!formInfo) return;

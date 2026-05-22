@@ -365,7 +365,15 @@ function VotePage() {
                     </div>
                     <div>
                       <h2 className="text-2xl font-bold text-foreground">{selectedProject.projectName}</h2>
-                      <p className="text-sm text-muted-foreground">Entregue em {new Date(selectedProject.createdAt).toLocaleDateString('pt-BR')}</p>
+                      {(() => {
+                        const date = new Date(selectedProject.createdAt);
+                        return Number.isFinite(date.getTime()) ? (
+                          <p className="text-sm text-muted-foreground">Entregue em {date.toLocaleDateString('pt-BR')}</p>
+                        ) : null;
+                      })()}
+                      {selectedProject.representativeEmail ? (
+                        <p className="text-sm text-muted-foreground mt-1">Contato: <a className="text-primary hover:underline" href={`mailto:${selectedProject.representativeEmail}`}>{selectedProject.representativeEmail}</a></p>
+                      ) : null}
                     </div>
                   </div>
 
@@ -378,25 +386,30 @@ function VotePage() {
                   {selectedProject.materials.length > 0 ? (
                     <div className="flex flex-col gap-5">
                       <div className="flex flex-wrap gap-3">
-                        {selectedProject.materials.map((m, i) => {
-                          const embedUrl = parseVideoUrl(m.url);
-                          if (embedUrl) return null; // rendered below
+                        {(() => {
+                          const linkMaterials = selectedProject.materials.filter((m) => {
+                            if (!m.url) return false;
+                            const isVideo = !!parseVideoUrl(m.url);
+                            const isPdf = /\.pdf(\?|$)/i.test(m.url) || (m.name && m.name.toLowerCase().endsWith('.pdf'));
+                            return !isVideo && !isPdf;
+                          });
 
-                          let hostname = "Link";
-                          try { hostname = new URL(m.url).hostname.replace('www.', ''); } catch (e) { }
-
-                          return (
-                            <a
-                              key={i}
-                              href={m.url}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="inline-flex items-center gap-2 rounded-xl border border-border bg-secondary/50 px-4 py-2.5 text-sm font-medium hover:bg-secondary hover:text-primary transition-colors"
-                            >
-                              <ExternalLink className="h-4 w-4" /> {hostname}
-                            </a>
-                          );
-                        })}
+                          return linkMaterials.map((m, i) => {
+                            let hostname = "Link";
+                            try { hostname = new URL(m.url).hostname.replace('www.', ''); } catch (e) { }
+                            return (
+                              <a
+                                key={i}
+                                href={m.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-2 rounded-xl border border-border bg-secondary/50 px-4 py-2.5 text-sm font-medium hover:bg-secondary hover:text-primary transition-colors"
+                              >
+                                <ExternalLink className="h-4 w-4" /> {hostname}
+                              </a>
+                            );
+                          });
+                        })()}
                       </div>
 
                       {selectedProject.materials.map((m, i) => {
@@ -411,6 +424,33 @@ function VotePage() {
                               allowFullScreen
                               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                             ></iframe>
+                          </div>
+                        );
+                      })}
+
+                      {/* Render PDFs or embedded documents */}
+                      {selectedProject.materials.map((m, i) => {
+                        const isPdf = m.url && (/\.pdf(\?|$)/i.test(m.url) || (m.name && m.name.toLowerCase().endsWith('.pdf')));
+                        if (!isPdf) return null;
+                        return (
+                          <div key={`pdf-${i}`} className="w-full overflow-hidden rounded-3xl border border-border shadow-sm bg-card">
+                            <div className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                              <div>
+                                <p className="text-sm font-semibold text-foreground">{m.name || 'Documento PDF'}</p>
+                                <p className="text-xs text-muted-foreground">Clique para abrir em nova aba ou role para visualizar abaixo.</p>
+                              </div>
+                              <a
+                                href={m.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center justify-center rounded-full border border-border bg-primary/10 px-4 py-2 text-sm font-semibold text-primary hover:bg-primary/20"
+                              >
+                                Abrir em nova aba
+                              </a>
+                            </div>
+                            <div className="overflow-hidden rounded-b-3xl border-t border-border bg-white">
+                              <iframe src={m.url} title={`Documento-${i}`} className="w-full h-[640px] border-0" />
+                            </div>
                           </div>
                         );
                       })}
