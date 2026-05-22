@@ -86,6 +86,8 @@ export type FormInfo = {
   title: string;
   slug: string;
   isOpen: boolean;
+  isVotePublic: boolean;
+  adminsCanVote: boolean;
 };
 
 export async function getForm(slug: string = 'hack-2026'): Promise<FormInfo | null> {
@@ -101,7 +103,7 @@ export async function getForm(slug: string = 'hack-2026'): Promise<FormInfo | nu
   }
 }
 
-export async function toggleFormStatus(id: number | string, isOpen: boolean) {
+export async function toggleFormStatus(id: number | string, data: Partial<FormInfo>) {
   const auth = loadAuth();
   const token = auth ? auth.token : '';
   const res = await fetch(`${getAPI()}/forms/${id}/toggle`, {
@@ -110,7 +112,7 @@ export async function toggleFormStatus(id: number | string, isOpen: boolean) {
       "Content-Type": "application/json",
       "Authorization": `Bearer ${token}`
     },
-    body: JSON.stringify({ isOpen })
+    body: JSON.stringify(data)
   });
   if (!res.ok) throw new Error("Erro ao alterar status do form");
 }

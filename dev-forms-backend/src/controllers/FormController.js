@@ -22,8 +22,8 @@ export class FormController {
   static async toggle(req, res) {
     try {
       const id = parseInt(req.params.id, 10);
-      const { isOpen } = req.body;
-      const form = await FormService.toggleStatus(id, isOpen);
+      const { isOpen, isVotePublic, adminsCanVote } = req.body;
+      const form = await FormService.toggleStatus(id, { isOpen, isVotePublic, adminsCanVote });
       return res.json(form);
     } catch (error) {
       return res.status(400).json({ error: error.message });

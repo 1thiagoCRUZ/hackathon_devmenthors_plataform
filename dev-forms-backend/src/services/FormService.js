@@ -28,10 +28,15 @@ export class FormService {
     return prisma.form.findMany();
   }
 
-  static async toggleStatus(formId, isOpen) {
+  static async toggleStatus(formId, data) {
+    const updateData = {};
+    if (data.isOpen !== undefined) updateData.isOpen = data.isOpen;
+    if (data.isVotePublic !== undefined) updateData.isVotePublic = data.isVotePublic;
+    if (data.adminsCanVote !== undefined) updateData.adminsCanVote = data.adminsCanVote;
+
     return prisma.form.update({
       where: { id: formId },
-      data: { isOpen }
+      data: updateData
     });
   }
 }

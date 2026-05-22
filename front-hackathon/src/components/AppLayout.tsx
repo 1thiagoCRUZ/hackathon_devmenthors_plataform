@@ -27,6 +27,12 @@ const NAV: NavItem[] = [
     roles: ["admin"],
   },
   {
+    to: "/permissoes",
+    label: "Permissões",
+    icon: Lock,
+    roles: ["admin"],
+  },
+  {
     to: "/avaliacao",
     label: "Avaliação & Votos",
     icon: Trophy,

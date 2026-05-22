@@ -4,6 +4,7 @@ import Login from './pages/Login';
 import Admin from './pages/Admin';
 import Avaliacao from './pages/Avaliacao';
 import Vote from './pages/Vote';
+import Permissions from './pages/Permissions';
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <Route path="/:slug" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/permissoes" element={<Permissions />} />
         <Route path="/avaliacao" element={<Avaliacao />} />
         <Route path="/vote" element={<Vote />} />
       </Routes>

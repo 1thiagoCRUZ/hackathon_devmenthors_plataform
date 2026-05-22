@@ -148,14 +148,18 @@ function AdminPage() {
     sessionStorage.removeItem('adminData');
   };
 
-  const handleToggleStatus = async (open: boolean) => {
+  const handleToggleStatus = async (field: keyof FormInfo, value: boolean) => {
     if (!formInfo) return;
     try {
-      await toggleFormStatus(formInfo.id, open);
-      setFormInfo((prev) => prev ? { ...prev, isOpen: open } : null);
-      toast.success(
-        open ? "Formulário aberto para entregas." : "Formulário fechado.",
-      );
+      await toggleFormStatus(formInfo.id, { [field]: value });
+      setFormInfo((prev) => prev ? { ...prev, [field]: value } : null);
+      if (field === "isOpen") {
+        toast.success(value ? "Formulário aberto para entregas." : "Formulário fechado.");
+      } else if (field === "isVotePublic") {
+        toast.success(value ? "Votação pública (Devs) ativada." : "Votação pública (Devs) desativada.");
+      } else if (field === "adminsCanVote") {
+        toast.success(value ? "Admins podem votar." : "Admins bloqueados de votar.");
+      }
       // Clear cache so next load gets fresh data
       sessionStorage.removeItem('adminData');
     } catch {
@@ -208,17 +212,13 @@ function AdminPage() {
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-3">
                   <div
-                    className={`flex h-10 w-10 items-center justify-center rounded-xl ${
+                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
                       formInfo.isOpen
                         ? "bg-primary/10 text-primary"
                         : "bg-destructive/10 text-destructive"
                     }`}
                   >
-                    {formInfo.isOpen ? (
-                      <Unlock className="h-5 w-5" />
-                    ) : (
-                      <Lock className="h-5 w-5" />
-                    )}
+                    {formInfo.isOpen ? <Unlock className="h-5 w-5" /> : <Lock className="h-5 w-5" />}
                   </div>
                   <div>
                     <h3 className="text-sm font-semibold text-foreground">
@@ -233,7 +233,7 @@ function AdminPage() {
                 </div>
                 <Switch
                   checked={formInfo.isOpen}
-                  onCheckedChange={handleToggleStatus}
+                  onCheckedChange={(v) => handleToggleStatus("isOpen", v)}
                   aria-label="Abrir ou fechar formulário"
                 />
               </div>

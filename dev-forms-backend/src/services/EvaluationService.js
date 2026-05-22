@@ -5,8 +5,21 @@ export class EvaluationService {
     const { submissionId, criterionInnovation, criterionDesign, criterionTechnical, notes } = data;
     const subIdInt = parseInt(submissionId, 10);
 
-    const submission = await prisma.submission.findUnique({ where: { id: subIdInt } });
+    const submission = await prisma.submission.findUnique({ 
+      where: { id: subIdInt },
+      include: { form: true }
+    });
     if (!submission) throw new Error('Submission not found');
+
+    const user = await prisma.user.findUnique({ where: { id: judgeId } });
+    if (!user) throw new Error('User not found');
+
+    if (user.role === 'ADMIN' && !submission.form.adminsCanVote) {
+      throw new Error('Administrators are not allowed to vote on this form');
+    }
+    if (user.role === 'DEV' && !submission.form.isVotePublic) {
+      throw new Error('Public voting (DEVs) is currently disabled for this form');
+    }
 
     const finalScore = (criterionInnovation + criterionDesign + criterionTechnical) / 3;
 
@@ -33,6 +46,9 @@ export class EvaluationService {
   }
 
   static async getRanking(formId) {
+    const form = await prisma.form.findUnique({ where: { id: formId } });
+    if (!form) throw new Error('Form not found');
+
     const submissions = await prisma.submission.findMany({
       where: { formId },
       include: {
@@ -44,17 +60,33 @@ export class EvaluationService {
 
     const ranking = submissions.map(sub => {
       const evals = sub.evaluations;
-      let totalWeight = 0;
-      let weightedScoreSum = 0;
 
-      evals.forEach(evalRecord => {
-        // DEV = Peso 1 | JUDGE/ADMIN = Peso 3
-        const weight = (evalRecord.judge.role === 'JUDGE' || evalRecord.judge.role === 'ADMIN') ? 3 : 1;
-        weightedScoreSum += evalRecord.finalScore * weight;
-        totalWeight += weight;
-      });
+      const judgeEvals = evals.filter(e => e.judge.role === 'JUDGE' || e.judge.role === 'ADMIN');
+      const devEvals = evals.filter(e => e.judge.role === 'DEV');
 
-      const averageScore = totalWeight > 0 ? weightedScoreSum / totalWeight : 0;
+      const avgJudge = judgeEvals.length > 0 
+        ? judgeEvals.reduce((acc, e) => acc + e.finalScore, 0) / judgeEvals.length 
+        : 0;
+
+      const avgDev = devEvals.length > 0
+        ? devEvals.reduce((acc, e) => acc + e.finalScore, 0) / devEvals.length
+        : 0;
+
+      let finalScore = 0;
+      if (!form.isVotePublic) {
+        finalScore = avgJudge;
+      } else {
+        // 80% Judge, 20% Dev
+        if (judgeEvals.length === 0 && devEvals.length === 0) {
+          finalScore = 0;
+        } else if (judgeEvals.length > 0 && devEvals.length === 0) {
+          finalScore = avgJudge;
+        } else if (judgeEvals.length === 0 && devEvals.length > 0) {
+          finalScore = avgDev;
+        } else {
+          finalScore = (avgJudge * 0.8) + (avgDev * 0.2);
+        }
+      }
 
       return {
         id: sub.id,
