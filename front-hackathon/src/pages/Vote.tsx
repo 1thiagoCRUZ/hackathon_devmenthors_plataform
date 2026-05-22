@@ -28,12 +28,14 @@ import {
   loadSubmissions,
   saveVote,
   getVotingProgress,
+  getForm,
   type AuthUser,
   type CriteriaKey,
   type CriteriaScores,
   type Submission,
   type Role,
   type VotingProgress,
+  type FormInfo,
 } from "@/lib/submissions";
 
 const emptyScores = (): CriteriaScores => ({
@@ -70,6 +72,7 @@ function VotePage() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [items, setItems] = useState<Submission[]>([]);
   const [progress, setProgress] = useState<VotingProgress | null>(null);
+  const [formInfo, setFormInfo] = useState<FormInfo | null>(null);
   const [selectedProject, setSelectedProject] = useState<Submission | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -85,7 +88,7 @@ function VotePage() {
   async function loadData(forceRefresh = false) {
     const u = loadAuth();
     setUser(u);
-    if (!u || u.role === "admin") {
+    if (!u) {
       setIsLoading(false);
       return;
     }
@@ -99,6 +102,7 @@ function VotePage() {
           const parsed = JSON.parse(cached);
           setItems(parsed.items);
           setProgress(parsed.progress);
+          setFormInfo(parsed.formInfo);
           setIsLoading(false);
           return;
         } catch (e) {
@@ -108,14 +112,16 @@ function VotePage() {
     }
 
     setIsLoading(true);
-    const [s, p] = await Promise.all([
+    const [f, s, p] = await Promise.all([
+      getForm('hack-2026'),
       loadSubmissions('hack-2026'),
       getVotingProgress('hack-2026')
     ]);
 
+    setFormInfo(f);
     setItems(s);
     setProgress(p);
-    sessionStorage.setItem(cacheKey, JSON.stringify({ items: s, progress: p }));
+    sessionStorage.setItem(cacheKey, JSON.stringify({ formInfo: f, items: s, progress: p }));
     setIsLoading(false);
   }
 
@@ -138,19 +144,41 @@ function VotePage() {
     );
   }
 
-  // Logged in but admin (cannot vote)
-  if (user.role === "admin") {
-    return (
-      <GateScreen
-        title="Administradores não votam"
-        description="Acesse o painel para acompanhar a votação."
-        cta={
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <Button asChild size="lg" className="gap-2">
-              <Link to="/avaliacao">
-                Ir para o painel <ChevronRight className="h-4 w-4" />
-              </Link>
-            </Button>
+  if (user && formInfo) {
+    if (user.role === "admin" && !formInfo.adminsCanVote) {
+      return (
+        <GateScreen
+          title="Administradores não votam"
+          description="A permissão para admins está desativada."
+          cta={
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Button asChild size="lg" className="gap-2">
+                <Link to="/permissoes">
+                  Ir para Permissões <ChevronRight className="h-4 w-4" />
+                </Link>
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => {
+                  clearAuth();
+                  setUser(null);
+                }}
+              >
+                Sair
+              </Button>
+            </div>
+          }
+        />
+      );
+    }
+
+    if (user.role === "mentor" && !formInfo.isVotePublic) {
+      return (
+        <GateScreen
+          title="Votação Pública Fechada"
+          description="Apenas jurados oficiais podem avaliar projetos no momento."
+          cta={
             <Button
               variant="outline"
               size="lg"
@@ -161,10 +189,10 @@ function VotePage() {
             >
               Sair
             </Button>
-          </div>
-        }
-      />
-    );
+          }
+        />
+      );
+    }
   }
 
   const voterType: Role = user.role;
@@ -238,6 +266,10 @@ function VotePage() {
                   {voterType === "juror" ? (
                     <>
                       <Gavel className="h-3.5 w-3.5" /> Jurado
+                    </>
+                  ) : voterType === "admin" ? (
+                    <>
+                      <Lock className="h-3.5 w-3.5" /> Admin
                     </>
                   ) : (
                     <>

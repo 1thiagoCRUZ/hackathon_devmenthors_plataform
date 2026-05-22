@@ -42,7 +42,7 @@ const NAV: NavItem[] = [
     to: "/vote",
     label: "Página de Votação",
     icon: Trophy,
-    roles: ["juror", "mentor"],
+    roles: ["juror", "mentor", "admin"],
   },
 ];
 
