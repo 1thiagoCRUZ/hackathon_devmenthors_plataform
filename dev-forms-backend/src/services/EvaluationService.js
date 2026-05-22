@@ -91,7 +91,7 @@ export class EvaluationService {
       return {
         id: sub.id,
         projectName: sub.projectName,
-        averageScore: Number(averageScore.toFixed(2)),
+        averageScore: Number(finalScore.toFixed(2)),
         evaluationsCount: evals.length,
         status: sub.status
       };

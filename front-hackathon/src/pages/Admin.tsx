@@ -320,7 +320,7 @@ function AdminPage() {
         ) : (
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
             {filtered.map((s) => (
-              <ProjectCard key={s.id} submission={s} onDelete={handleDelete} />
+              <ProjectCard key={s.id} submission={s} />
             ))}
           </div>
         )}
@@ -338,10 +338,8 @@ function AdminPage() {
 
 function ProjectCard({
   submission,
-  onDelete,
 }: {
   submission: Submission;
-  onDelete: (id: string) => void;
 }) {
   return (
     <article className="flex flex-col rounded-2xl border border-border bg-card p-6 shadow-sm transition-shadow hover:shadow-md">
@@ -410,23 +408,10 @@ function ProjectCard({
         </div>
       )}
 
-      <footer className="mt-5 flex items-center justify-between border-t border-border pt-4 text-xs text-muted-foreground">
+      <footer className="mt-5 flex items-center justify-start border-t border-border pt-4 text-xs text-muted-foreground">
         <span className="inline-flex items-center gap-1.5">
-          <Users className="h-3.5 w-3.5" /> {submission.members.length}
+          <Users className="h-3.5 w-3.5" /> {submission.members.length} {submission.members.length === 1 ? 'membro' : 'membros'}
         </span>
-        <span className="inline-flex items-center gap-1.5">
-          <Calendar className="h-3.5 w-3.5" /> {formatDate(submission.createdAt)}
-        </span>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7"
-          aria-label="Excluir projeto"
-          onClick={() => onDelete(submission.id)}
-        >
-          <Trash2 className="h-3.5 w-3.5 text-destructive" />
-        </Button>
       </footer>
     </article>
   );
