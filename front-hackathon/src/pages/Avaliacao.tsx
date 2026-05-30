@@ -63,7 +63,7 @@ function AvaliacaoPage() {
     }
 
     setLoading(true);
-    const f = await getForm('hack-2026');
+    const f = await getForm('hackhealth');
     if (f) {
       const data = await getRanking(f.id);
       const rankingData = data.ranking || [];
@@ -91,7 +91,7 @@ function AvaliacaoPage() {
     }
 
     setReportLoading(true);
-    const data = await getVotingReport('hack-2026');
+    const data = await getVotingReport('hackhealth');
     setReport(data);
     if (selectedProjectId === null && data.length > 0) {
       setSelectedProjectId(data[0].id);

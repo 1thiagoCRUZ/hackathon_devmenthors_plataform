@@ -16,12 +16,14 @@ import {
   Lock,
   CheckCircle2,
   Mail,
+  Bot,
 } from "lucide-react";
 import logo from "@/assets/devmenthors_LogoColor.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -98,7 +100,7 @@ const materialFileAccept =
 
 export default function Home() {
   const params = useParams<{ slug?: string }>();
-  const slug = params.slug || 'hack-2026';
+  const slug = params.slug || 'hackhealth';
   const [formInfo, setFormInfo] = useState<FormInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -188,6 +190,8 @@ function FormBody({ slug }: { slug: string }) {
     { id: uid(), type: "github", url: "" },
     { id: uid(), type: "other", url: "", file: null },
   ]);
+  const [usedAI, setUsedAI] = useState(false);
+  const [aiDescription, setAiDescription] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -226,6 +230,8 @@ function FormBody({ slug }: { slug: string }) {
       return toast.error("Descreva a ideia com pelo menos 20 caracteres.");
     if (materials.some((m) => m.type === "other" && !m.file))
       return toast.error("Para PDF / Docs, selecione o arquivo e não use link.");
+    if (usedAI && aiDescription.trim().length < 10)
+      return toast.error("Descreva o uso da IA com pelo menos 10 caracteres.");
 
     setSubmitting(true);
     
@@ -242,7 +248,7 @@ function FormBody({ slug }: { slug: string }) {
         members: members.map((m) => ({ ...m, name: m.name.trim() })),
         materials: submissionMaterials,
         createdAt: new Date().toISOString(),
-      }, slug, materials);
+      }, slug, materials, usedAI, aiDescription.trim());
       
       setSubmitting(false);
       setSuccess(true);
@@ -517,6 +523,53 @@ function FormBody({ slug }: { slug: string }) {
               <Plus className="h-4 w-4" />
               Adicionar material
             </button>
+          </div>
+        </Card>
+
+        <Card
+          step={4}
+          icon={<Bot className="h-4 w-4" />}
+          title="Uso de Inteligência Artificial"
+          subtitle="Transparência no desenvolvimento"
+        >
+          <div className="space-y-4">
+            <div className="flex items-center justify-between gap-4 rounded-xl border border-border bg-background px-4 py-3">
+              <div className="space-y-0.5">
+                <Label htmlFor="used-ai-toggle" className="cursor-pointer text-sm font-medium">
+                  O time utilizou IA no desenvolvimento?
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Ex.: ChatGPT, GitHub Copilot, Gemini, Cursor...
+                </p>
+              </div>
+              <Switch
+                id="used-ai-toggle"
+                checked={usedAI}
+                onCheckedChange={(checked) => {
+                  setUsedAI(checked);
+                  if (!checked) setAiDescription("");
+                }}
+              />
+            </div>
+
+            {usedAI && (
+              <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                <Label htmlFor="ai-description">
+                  Como e para que utilizou a IA?
+                </Label>
+                <Textarea
+                  id="ai-description"
+                  placeholder="Ex.: Usamos o GitHub Copilot para acelerar a escrita de código e o ChatGPT para estruturar a arquitetura da solução e gerar ideias de funcionalidades."
+                  value={aiDescription}
+                  onChange={(e) => setAiDescription(e.target.value)}
+                  rows={4}
+                  maxLength={800}
+                />
+                <p className="text-right text-xs text-muted-foreground">
+                  {aiDescription.length}/800
+                </p>
+              </div>
+            )}
           </div>
         </Card>
 

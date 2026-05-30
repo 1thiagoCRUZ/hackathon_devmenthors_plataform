@@ -7,7 +7,7 @@ export class SubmissionController {
     try {
       // 1. Pega o slug da URL (req.params)
       const { slug } = req.params;
-      const { projectName, description, leaderEmail, teamMembers, links } = req.body;
+      const { projectName, description, leaderEmail, teamMembers, links, usedAI, aiDescription } = req.body;
       const files = req.files || []; 
 
       // 2. Busca no Prisma pelo formId atrelado a esse slug e já checa se está aberto
@@ -32,14 +32,9 @@ export class SubmissionController {
         leaderEmail,
         teamMembers: parsedTeamMembers,
         links: parsedLinks,
+        usedAI: usedAI === 'true' || usedAI === true,
+        aiDescription: aiDescription || null,
       }, files);
-
-      if (result.queued) {
-        return res.status(202).json({
-          message: 'Submission accepted. Files are being processed in the background.',
-          submissionId: result.submission.id,
-        });
-      }
 
       return res.status(201).json({
         message: 'Submission created successfully.',
@@ -63,7 +58,7 @@ export class SubmissionController {
 
       const submissions = await prisma.submission.findMany({
         where: { formId: form.id, status: 'PROCESSED' },
-        select: { id: true, projectName: true, description: true, status: true, leaderEmail: true, teamMembers: true, links: true, files: true }
+        select: { id: true, projectName: true, description: true, status: true, leaderEmail: true, teamMembers: true, links: true, files: true, usedAI: true, aiDescription: true, createdAt: true }
       });
 
       const qrCodeOptions = {

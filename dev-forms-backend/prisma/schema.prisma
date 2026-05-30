@@ -44,22 +44,25 @@ model Form {
 }
 
 model Submission {
-  id          Int          @id @default(autoincrement())
-  formId      Int
-  projectName String
-  description String
-  leaderEmail String
-  teamMembers Json         // Ex: [{ "name": "Dev" }, { "name": "Designer" }]
-  links       Json         // Ex: ["github.com/repo"]
-  files       Json?        // Armazena URLs finais dos arquivos (S3, etc) pós-processamento
-  status      String       @default("PENDING") // PENDING, PROCESSING, PROCESSED, ERROR
-  
+  id             Int          @id @default(autoincrement())
+  formId         Int
+  projectName    String
+  description    String
+  leaderEmail    String
+  teamMembers    Json         // Ex: [{ "name": "Dev" }, { "name": "Designer" }]
+  links          Json         // Ex: ["github.com/repo"]
+  files          Json?        // Armazena URLs finais dos arquivos (S3, etc) pós-processamento
+  status         String       @default("PENDING") // PENDING, PROCESSING, PROCESSED, ERROR
+  usedAI         Boolean      @default(false)
+  aiDescription  String?      // Descreve como/para que a IA foi utilizada
+
   form        Form         @relation(fields: [formId], references: [id])
   evaluations Evaluation[]
-  
+
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 }
+
 
 model Evaluation {
   id                  Int        @id @default(autoincrement())

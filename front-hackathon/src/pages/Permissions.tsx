@@ -16,7 +16,7 @@ export default function Permissions() {
 
   async function loadData() {
     setLoading(true);
-    const f = await getForm('hack-2026');
+    const f = await getForm('hackhealth');
     setFormInfo(f);
     setLoading(false);
   }

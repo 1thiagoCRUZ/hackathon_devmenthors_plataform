@@ -111,8 +111,8 @@ function AdminPage() {
 
     setLoading(true);
     const [f, s] = await Promise.all([
-      getForm('hack-2026'),
-      loadSubmissions('hack-2026')
+      getForm('hackhealth'),
+      loadSubmissions('hackhealth')
     ]);
     
     setFormInfo(f);

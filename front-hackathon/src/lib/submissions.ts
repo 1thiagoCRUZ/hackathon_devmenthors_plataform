@@ -17,6 +17,8 @@ export type Submission = {
   materials: { id?: string; type: MaterialType; url: string; name?: string }[];
   links?: string[]; // retorno da api
   createdAt: string;
+  usedAI?: boolean;
+  aiDescription?: string | null;
 };
 
 export type Role = "ADMIN" | "JUDGE" | "DEV" | "admin" | "juror" | "mentor";
@@ -161,6 +163,8 @@ export async function loadSubmissions(slug: string = 'hack-2026'): Promise<Submi
         members: teamMembers,
         materials,
         createdAt: d.createdAt,
+        usedAI: d.usedAI ?? false,
+        aiDescription: d.aiDescription ?? null,
       };
     });
   } catch {
@@ -168,7 +172,13 @@ export async function loadSubmissions(slug: string = 'hack-2026'): Promise<Submi
   }
 }
 
-export async function saveSubmission(s: Submission, slug: string = 'hack-2026', materialsWithFiles: Array<{ id: string; type: MaterialType; url: string; file?: File | null }> = []) {
+export async function saveSubmission(
+  s: Submission,
+  slug: string = 'hack-2026',
+  materialsWithFiles: Array<{ id: string; type: MaterialType; url: string; file?: File | null }> = [],
+  usedAI: boolean = false,
+  aiDescription: string = ''
+) {
   const formData = new FormData();
   formData.append('projectName', s.projectName);
   formData.append('description', s.description);
@@ -179,6 +189,11 @@ export async function saveSubmission(s: Submission, slug: string = 'hack-2026', 
   
   const links = s.materials.map(m => m.url).filter(Boolean);
   formData.append('links', JSON.stringify(links));
+
+  formData.append('usedAI', String(usedAI));
+  if (usedAI && aiDescription.trim()) {
+    formData.append('aiDescription', aiDescription.trim());
+  }
 
   materialsWithFiles.forEach((material) => {
     if (material.file) {

@@ -14,7 +14,9 @@ import {
   Check,
   ChevronRight,
   User,
-  Layers
+  Layers,
+  Bot,
+  RefreshCw,
 } from "lucide-react";
 import logo from "@/assets/devmenthors_LogoColor.png";
 import { Button } from "@/components/ui/button";
@@ -113,9 +115,9 @@ function VotePage() {
 
     setIsLoading(true);
     const [f, s, p] = await Promise.all([
-      getForm('hack-2026'),
-      loadSubmissions('hack-2026'),
-      getVotingProgress('hack-2026')
+      getForm('hackhealth'),
+      loadSubmissions('hackhealth'),
+      getVotingProgress('hackhealth')
     ]);
 
     setFormInfo(f);
@@ -277,9 +279,21 @@ function VotePage() {
                     </>
                   )}
                 </div>
-                <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-                  Dashboard de Votação
-                </h1>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                  <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+                    Dashboard de Votação
+                  </h1>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => loadData(true)} 
+                    disabled={isLoading} 
+                    className="gap-2 w-fit bg-secondary/30 hover:bg-secondary"
+                  >
+                    <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                    Atualizar Dados
+                  </Button>
+                </div>
                 <p className="mt-2 text-sm text-muted-foreground sm:text-base">
                   Selecione um projeto para analisar os materiais e dar a sua nota.
                 </p>
@@ -342,6 +356,12 @@ function VotePage() {
                           <Layers className="h-4 w-4" /> {project.materials.length} links
                         </div>
                       </div>
+                      {project.usedAI && (
+                        <div className="mt-3 flex items-center gap-1.5 rounded-lg bg-violet-500/10 border border-violet-500/20 px-2.5 py-1.5 text-[11px] font-semibold text-violet-600">
+                          <Bot className="h-3.5 w-3.5" />
+                          Utilizou IA no desenvolvimento
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -466,6 +486,33 @@ function VotePage() {
                         {m.name}
                       </span>
                     ))}
+                  </div>
+
+                  {/* Bloco de uso de IA */}
+                  <div className="mt-8">
+                    <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
+                      <Bot className="h-4 w-4" />
+                      Uso de Inteligência Artificial
+                    </h3>
+                    {selectedProject.usedAI ? (
+                      <div className="rounded-2xl border border-violet-500/25 bg-violet-500/8 p-4 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <span className="inline-flex items-center gap-1.5 rounded-full bg-violet-500/15 border border-violet-500/25 px-3 py-1 text-xs font-bold text-violet-600">
+                            <Bot className="h-3.5 w-3.5" />
+                            IA utilizada no desenvolvimento
+                          </span>
+                        </div>
+                        {selectedProject.aiDescription && (
+                          <p className="text-sm leading-relaxed text-foreground whitespace-pre-wrap pt-1">
+                            {selectedProject.aiDescription}
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 rounded-2xl border border-border bg-secondary/40 px-4 py-3">
+                        <span className="text-sm text-muted-foreground">Equipe declarou <strong>não ter utilizado</strong> IA no desenvolvimento.</span>
+                      </div>
+                    )}
                   </div>
                 </section>
               </div>

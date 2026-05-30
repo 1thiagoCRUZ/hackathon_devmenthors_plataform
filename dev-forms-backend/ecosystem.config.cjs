@@ -11,12 +11,7 @@ module.exports = {
       env_production: {
         NODE_ENV: 'production',
       }
-    },
-    {
-      name: 'upload-worker',
-      script: './src/workers/UploadWorker.js',
-      instances: 1, // Worker processando a fila não precisa rodar em todas as CPUs
-      exec_mode: 'fork',
     }
   ]
 };
+
