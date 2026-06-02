@@ -29,6 +29,7 @@ export type AuthUser = {
   email: string;
   role: Role;
   token?: string;
+  createdAt?: string;
 };
 
 const AUTH_KEY = "hackathon-auth";
@@ -79,6 +80,48 @@ export async function login(email: string, password: string): Promise<AuthUser> 
 
   setAuth(userData);
   return userData;
+}
+
+export async function loadUsers(): Promise<AuthUser[]> {
+  const auth = loadAuth();
+  const token = auth ? auth.token : '';
+  const res = await fetch(`${getAPI()}/auth/users`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  if (!res.ok) throw new Error("Erro ao carregar usuários");
+  return res.json();
+}
+
+export async function createUser(name: string, email: string, role: string): Promise<AuthUser> {
+  const auth = loadAuth();
+  const token = auth ? auth.token : '';
+  const res = await fetch(`${getAPI()}/auth/users`, {
+    method: "POST",
+    headers: { 
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}` 
+    },
+    body: JSON.stringify({ name, email, role })
+  });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => null);
+    throw new Error(errorData?.error || "Erro ao criar usuário");
+  }
+  return res.json();
+}
+
+export async function sendCredentialsEmail(userId: string | number): Promise<{ success: boolean; testPreviewUrl?: string; loggedConsole?: boolean }> {
+  const auth = loadAuth();
+  const token = auth ? auth.token : '';
+  const res = await fetch(`${getAPI()}/auth/users/${userId}/send-email`, {
+    method: "POST",
+    headers: { "Authorization": `Bearer ${token}` }
+  });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => null);
+    throw new Error(errorData?.error || "Erro ao enviar e-mail");
+  }
+  return res.json();
 }
 
 /* ---------------- Forms & Status ---------------- */

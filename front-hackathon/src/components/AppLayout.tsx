@@ -6,6 +6,7 @@ import {
   LogOut,
   Trophy,
   Lock,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,12 @@ const NAV: NavItem[] = [
     to: "/admin",
     label: "Projetos Entregues",
     icon: ShieldCheck,
+    roles: ["admin"],
+  },
+  {
+    to: "/usuarios",
+    label: "Usuários & Jurados",
+    icon: Users,
     roles: ["admin"],
   },
   {

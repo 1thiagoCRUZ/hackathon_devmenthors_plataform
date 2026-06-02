@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import {
   Users,
   ExternalLink,
-  
+  RefreshCw,
   Inbox,
   Code,
   Globe,
@@ -170,9 +170,21 @@ function AdminPage() {
         title="Projetos Entregues"
         subtitle="Acompanhe entregas e gerencie o formulário público."
         actions={
-          <Badge variant="secondary" className="px-3 py-1.5 text-xs font-semibold">
-            {items.length} {items.length === 1 ? "entrega" : "entregas"}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => loadData(true)}
+              disabled={loading}
+              className="gap-1.5"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
+              Atualizar
+            </Button>
+            <Badge variant="secondary" className="px-3 py-1.5 text-xs font-semibold">
+              {items.length} {items.length === 1 ? "entrega" : "entregas"}
+            </Badge>
+          </div>
         }
       />
 
