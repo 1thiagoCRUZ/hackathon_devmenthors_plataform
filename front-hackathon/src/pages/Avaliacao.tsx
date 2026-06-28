@@ -14,6 +14,9 @@ import {
   ChevronRight,
   CheckCircle2,
   XCircle,
+  Mail,
+  Send,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +28,8 @@ import {
   getForm,
   getRanking,
   getVotingReport,
+  loadAuth,
+  sendWinnerEmail,
   type VotingReportProject,
 } from "@/lib/submissions";
 
@@ -38,6 +43,34 @@ function AvaliacaoPage() {
   const [report, setReport] = useState<VotingReportProject[]>([]);
   const [reportLoading, setReportLoading] = useState(true);
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
+  const [sendingWinnerId, setSendingWinnerId] = useState<number | string | null>(null);
+
+  const authUser = loadAuth();
+  const isAdmin = authUser?.role === 'admin';
+
+  const handleSendWinnerEmail = async (submissionId: number | string, position: number, projectName: string) => {
+    setSendingWinnerId(submissionId);
+    try {
+      const result = await sendWinnerEmail(submissionId, position);
+      const posLabel = position === 1 ? '1º lugar (Campeão)' : `${position}º lugar`;
+      if (result.testPreviewUrl) {
+        toast.success(`E-mail de ${posLabel} enviado (${projectName})!`, {
+          description: `Visualização disponível no Ethereal Mail.`,
+          action: {
+            label: "Ver E-mail",
+            onClick: () => window.open(result.testPreviewUrl, "_blank"),
+          },
+          duration: 10000,
+        });
+      } else {
+        toast.success(`E-mail oficial de ${posLabel} enviado para a equipe do projeto ${projectName}!`);
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao enviar e-mail para o vencedor.");
+    } finally {
+      setSendingWinnerId(null);
+    }
+  };
 
   useEffect(() => {
     loadData();
@@ -245,6 +278,9 @@ function AvaliacaoPage() {
                     key={row.id}
                     position={idx + 1}
                     data={row}
+                    isAdmin={isAdmin}
+                    onSendWinnerEmail={handleSendWinnerEmail}
+                    sendingId={sendingWinnerId}
                   />
                 ))}
               </div>
@@ -502,9 +538,15 @@ function AvaliacaoPage() {
 function RankingRow({
   position,
   data,
+  isAdmin,
+  onSendWinnerEmail,
+  sendingId,
 }: {
   position: number;
   data: any;
+  isAdmin: boolean;
+  onSendWinnerEmail: (submissionId: number | string, position: number, projectName: string) => void;
+  sendingId: number | string | null;
 }) {
   const medal =
     position === 1
@@ -515,6 +557,8 @@ function RankingRow({
           ? "bg-amber-700/20 text-amber-800"
           : "bg-secondary text-muted-foreground";
 
+  const isSending = sendingId === data.id;
+
   return (
     <article className="rounded-2xl border border-border bg-card p-5 shadow-sm">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
@@ -524,15 +568,45 @@ function RankingRow({
           {position === 1 ? <Crown className="h-5 w-5" /> : position}
         </div>
         <div className="min-w-0 flex-1">
-          <h3 className="truncate text-base font-bold text-foreground">
-            {data.projectName}
-          </h3>
-          <p className="text-xs text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <h3 className="truncate text-base font-bold text-foreground">
+              {data.projectName}
+            </h3>
+            {position <= 3 && (
+              <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-600 font-bold text-[10px]">
+                {position === 1 ? "1º Lugar" : position === 2 ? "2º Lugar" : "3º Lugar"}
+              </Badge>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground mt-0.5">
             {data.evaluationsCount}{" "}
             {data.evaluationsCount === 1 ? "avaliação" : "avaliações"}
           </p>
         </div>
-        <div className="rounded-xl bg-primary/10 px-4 py-2 text-center">
+
+        {isAdmin && position <= 3 && (
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={sendingId !== null}
+            onClick={() => onSendWinnerEmail(data.id, position, data.projectName)}
+            className="border-indigo-500/20 hover:border-indigo-500/40 text-indigo-500 hover:text-indigo-600 bg-indigo-500/5 hover:bg-indigo-500/10 gap-1.5 text-xs font-semibold h-9 px-3 shrink-0"
+          >
+            {isSending ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                Enviando...
+              </>
+            ) : (
+              <>
+                <Send className="h-3.5 w-3.5" />
+                Notificar Vencedor
+              </>
+            )}
+          </Button>
+        )}
+
+        <div className="rounded-xl bg-primary/10 px-4 py-2 text-center shrink-0">
           <p className="text-[10px] font-bold uppercase tracking-wider text-primary">
             Nota Final
           </p>

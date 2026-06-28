@@ -301,4 +301,136 @@ export class EmailService {
     console.log(`[EmailService] E-mail enviado com sucesso para ${email}`);
     return { success: true };
   }
+
+  /**
+   * Envia o e-mail oficial de notificação para a equipe vencedora do Hackathon.
+   */
+  static async sendWinnerEmail({ leaderEmail, projectName, position, teamMembers = [], customMessage = '' }) {
+    const isChampion = Number(position) === 1;
+    const posText = isChampion ? '1º Lugar (Campeão)' : Number(position) === 2 ? '2º Lugar' : Number(position) === 3 ? '3º Lugar' : `${position}º Lugar`;
+    const trophyColor = isChampion ? '#eab308' : Number(position) === 2 ? '#94a3b8' : '#d97706';
+
+    const emailSubject = isChampion
+      ? `Parabéns! O projeto ${projectName} é o vencedor do Hackathon DevMenthors!`
+      : `Parabéns! O projeto ${projectName} conquistou o ${posText} no Hackathon DevMenthors!`;
+
+    const emailTitle = isChampion
+      ? `PARABÉNS PELO 1º LUGAR E CAMPEONATO!`
+      : `EXCELENTE CONQUISTA NO PÓDIO!`;
+
+    const introText = isChampion
+      ? `É com imenso orgulho e admiração que a comissão organizadora comunica que a sua equipe alcançou o topo do pódio e consagrou-se a grande <strong>CAMPEÃ</strong> do <strong>Hackathon DevMenthors</strong>!<br><br>O projeto <strong>${projectName}</strong> se destacou de forma exemplar em todos os critérios de inovação, design e excelência técnica, superando desafios e demonstrando um nível de entrega extraordinário.`
+      : `É com imensa alegria que parabenizamos a sua equipe pelo brilhante desempenho e pela conquista da <strong>${posText}</strong> no pódio oficial do <strong>Hackathon DevMenthors</strong>!<br><br>Entre diversos projetos de altíssimo nível, o <strong>${projectName}</strong> demonstrou muita dedicação, criatividade e grande domínio técnico, garantindo merecidamente um lugar de destaque entre os melhores do evento.`;
+
+    const closingText = isChampion
+      ? `Parabéns por esta conquista memorável! Em breve nossa equipe de organização entrará em contato oficial com os detalhes da premiação principal e próximos passos.`
+      : `Agradecemos imensamente a participação e o empenho demonstrados por todos os integrantes durante todo o evento.`;
+
+    let logoPath = path.join(__dirname, '../assets/devmenthors_LogoColor.png');
+    let hasLogo = fs.existsSync(logoPath);
+    if (!hasLogo) {
+      const fallbackLogoPath = path.join(__dirname, '../../../../front-hackathon/src/assets/devmenthors_LogoColor.png');
+      if (fs.existsSync(fallbackLogoPath)) {
+        logoPath = fallbackLogoPath;
+        hasLogo = true;
+      }
+    }
+
+    const membersList = Array.isArray(teamMembers) && teamMembers.length > 0
+      ? teamMembers.map(m => typeof m === 'string' ? m : m.name).join(', ')
+      : '';
+
+    const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${emailTitle}</title>
+  <style>
+    body { margin: 0; padding: 0; background-color: #f4f5f7; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #1f2937; -webkit-font-smoothing: antialiased; }
+    .wrapper { width: 100%; background-color: #f4f5f7; padding: 40px 0; }
+    .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); border: 1px solid #e5e7eb; }
+    .header { background-color: #ffffff; padding: 32px; text-align: center; border-bottom: 4px solid ${trophyColor}; }
+    .header img { height: 64px; margin-bottom: 12px; }
+    .header h1 { margin: 0; color: #0f172a; font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
+    .content { padding: 40px 32px; text-align: center; }
+    .trophy-badge { display: inline-block; background-color: ${isChampion ? '#fef3c7' : '#f1f5f9'}; color: ${isChampion ? '#b45309' : '#334155'}; padding: 8px 20px; border-radius: 9999px; font-weight: 800; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 20px; }
+    .welcome-text { font-size: 22px; line-height: 1.4; color: #111827; margin-top: 0; margin-bottom: 16px; font-weight: 800; }
+    .footer { background-color: #f8fafc; padding: 24px 32px; text-align: center; border-top: 1px solid #e2e8f0; }
+    .footer p { margin: 0; font-size: 13px; color: #64748b; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="container">
+      <div class="header">
+        ${hasLogo ? '<img src="cid:logo" alt="DevMenthors Logo">' : ''}
+        <h1>Hackathon DevMenthors</h1>
+      </div>
+      <div class="content">
+        <div class="trophy-badge">Posição Oficial · ${posText}</div>
+        <h2 class="welcome-text">${emailTitle}</h2>
+        <p style="font-size: 15px; line-height: 1.6; color: #4b5563; margin-bottom: 28px; text-align: left;">
+          ${introText}
+        </p>
+
+        ${customMessage ? `
+        <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 24px; margin-bottom: 32px; text-align: left;">
+          <div style="font-size: 12px; text-transform: uppercase; color: #166534; font-weight: 800; margin-bottom: 8px; letter-spacing: 0.05em;">💬 Recado da Comissão Organizadora</div>
+          <div style="font-size: 15px; color: #14532d; line-height: 1.6; white-space: pre-wrap; font-weight: 500;">${customMessage}</div>
+        </div>
+        ` : ''}
+
+        <p style="font-size: 14px; color: #4b5563; line-height: 1.6; margin: 0; text-align: left;">
+          ${closingText}
+        </p>
+      </div>
+      <div class="footer">
+        <p>&copy; 2026 <a href="https://devmenthors.com.br" target="_blank" style="color: #6366f1; text-decoration: none;">DevMenthors</a>. Todos os direitos reservados.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+    `;
+
+    const { transporter, from, isTest } = await this.getTransporter();
+
+    const mailOptions = {
+      from,
+      to: leaderEmail,
+      subject: emailSubject,
+      html: htmlContent,
+      attachments: hasLogo ? [
+        {
+          filename: 'devmenthors_logo.png',
+          path: logoPath,
+          cid: 'logo'
+        }
+      ] : []
+    };
+
+    if (!transporter) {
+      console.log('========================================================================');
+      console.log(`[EmailService WINNER LOG] Enviando e-mail de vencedor para: ${leaderEmail}`);
+      console.log(`Projeto: ${projectName} | Posição: ${posText}`);
+      console.log('========================================================================');
+      return { success: true, loggedConsole: true };
+    }
+
+    const info = await transporter.sendMail(mailOptions);
+
+    if (isTest) {
+      const previewUrl = nodemailer.getTestMessageUrl(info);
+      console.log('\n========================================================================');
+      console.log(`[EmailService WINNER TEST] E-mail enviado para: ${leaderEmail}`);
+      console.log(`[EmailService WINNER TEST] Link: \x1b[36m${previewUrl}\x1b[0m`);
+      console.log('========================================================================\n');
+      return { success: true, testPreviewUrl: previewUrl };
+    }
+
+    console.log(`[EmailService] E-mail de vencedor enviado com sucesso para ${leaderEmail}`);
+    return { success: true };
+  }
 }

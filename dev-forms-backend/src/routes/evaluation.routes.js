@@ -11,4 +11,7 @@ router.post('/', authMiddleware(), EvaluationController.evaluate);
 // Qualquer logado (ou até publico, dependendo da regra) pode ver o ranking
 router.get('/ranking/:formId', authMiddleware(), EvaluationController.ranking);
 
+// Envio de e-mail de notificação aos vencedores (Apenas ADMIN)
+router.post('/send-winner-email', authMiddleware(['ADMIN']), EvaluationController.sendWinnerEmail);
+
 export default router;

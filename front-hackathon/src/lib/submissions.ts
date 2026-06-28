@@ -7,15 +7,15 @@ export type MaterialType =
   | "other";
 
 export type Submission = {
-  id: string; // no backend é int mas pode vir como int e a gente parseia string ou vice-versa
+  id: string;
   projectName: string;
   description: string;
   representativeEmail?: string;
-  leaderEmail?: string; // a api manda de volta?
+  leaderEmail?: string;
   members: { id?: string; name: string }[];
-  teamMembers?: any; // para suportar retorno da api
+  teamMembers?: any;
   materials: { id?: string; type: MaterialType; url: string; name?: string }[];
-  links?: string[]; // retorno da api
+  links?: string[];
   createdAt: string;
   usedAI?: boolean;
   aiDescription?: string | null;
@@ -354,3 +354,22 @@ export async function getVotingReport(slug: string = 'hack-2026'): Promise<Votin
     return [];
   }
 }
+
+export async function sendWinnerEmail(submissionId: string | number, position: number, customMessage?: string): Promise<{ success: boolean; testPreviewUrl?: string; loggedConsole?: boolean }> {
+  const auth = loadAuth();
+  const token = auth ? auth.token : '';
+  const res = await fetch(`${getAPI()}/evaluations/send-winner-email`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify({ submissionId, position, customMessage })
+  });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => null);
+    throw new Error(errorData?.error || "Erro ao enviar e-mail para o vencedor");
+  }
+  return res.json();
+}
+

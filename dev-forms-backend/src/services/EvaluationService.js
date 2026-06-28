@@ -1,4 +1,5 @@
 import { prisma } from '../config/prisma.js';
+import { EmailService } from './EmailService.js';
 
 export class EvaluationService {
   static async evaluate(data, judgeId) {
@@ -140,9 +141,10 @@ export class EvaluationService {
     const form = await prisma.form.findUnique({ where: { slug } });
     if (!form) throw new Error('Form not found');
 
-    // Fetch all judges and mentors
+    // Fetch all judges, mentors and admins (if admins can vote)
+    const rolesToFetch = form.adminsCanVote ? ['JUDGE', 'DEV', 'ADMIN'] : ['JUDGE', 'DEV'];
     const judges = await prisma.user.findMany({
-      where: { role: { in: ['JUDGE', 'DEV'] } },
+      where: { role: { in: rolesToFetch } },
       select: { id: true, name: true, email: true, role: true }
     });
 
@@ -160,12 +162,14 @@ export class EvaluationService {
     const report = submissions.map(sub => {
       const votedJudgeIds = new Set(sub.evaluations.map(e => e.judgeId));
       
+      const isJudgeRole = (r) => r === 'JUDGE' || (form.adminsCanVote && r === 'ADMIN');
+
       const votedByJudges = judges
-        .filter(j => j.role === 'JUDGE' && votedJudgeIds.has(j.id))
+        .filter(j => isJudgeRole(j.role) && votedJudgeIds.has(j.id))
         .map(j => ({ id: j.id, name: j.name, email: j.email }));
       
       const pendingJudges = judges
-        .filter(j => j.role === 'JUDGE' && !votedJudgeIds.has(j.id))
+        .filter(j => isJudgeRole(j.role) && !votedJudgeIds.has(j.id))
         .map(j => ({ id: j.id, name: j.name, email: j.email }));
 
       const votedByMentors = judges
@@ -187,5 +191,31 @@ export class EvaluationService {
     });
 
     return report;
+  }
+
+  static async sendWinnerEmail(submissionId, position, customMessage = '') {
+    const subIdInt = parseInt(submissionId, 10);
+    const submission = await prisma.submission.findUnique({
+      where: { id: subIdInt }
+    });
+    if (!submission) throw new Error('Projeto não encontrado');
+    if (!submission.leaderEmail) throw new Error('Projeto não possui e-mail de representante cadastrado');
+
+    let teamMembers = [];
+    if (submission.teamMembers) {
+      teamMembers = typeof submission.teamMembers === 'string'
+        ? JSON.parse(submission.teamMembers)
+        : submission.teamMembers;
+    }
+
+    const result = await EmailService.sendWinnerEmail({
+      leaderEmail: submission.leaderEmail,
+      projectName: submission.projectName,
+      position: Number(position) || 1,
+      teamMembers,
+      customMessage
+    });
+
+    return result;
   }
 }

@@ -51,4 +51,14 @@ export class EvaluationController {
       return res.status(500).json({ error: 'Internal Server Error' });
     }
   }
+
+  static async sendWinnerEmail(req, res) {
+    try {
+      const { submissionId, position, customMessage } = req.body;
+      const result = await EvaluationService.sendWinnerEmail(submissionId, position, customMessage);
+      return res.json(result);
+    } catch (error) {
+      return res.status(400).json({ error: error.message });
+    }
+  }
 }
