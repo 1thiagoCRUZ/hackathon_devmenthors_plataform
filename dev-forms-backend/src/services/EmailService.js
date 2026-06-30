@@ -306,25 +306,14 @@ export class EmailService {
    * Envia o e-mail oficial de notificação para a equipe vencedora do Hackathon.
    */
   static async sendWinnerEmail({ leaderEmail, projectName, position, teamMembers = [], customMessage = '' }) {
-    const isChampion = Number(position) === 1;
-    const posText = isChampion ? '1º Lugar (Campeão)' : Number(position) === 2 ? '2º Lugar' : Number(position) === 3 ? '3º Lugar' : `${position}º Lugar`;
-    const trophyColor = isChampion ? '#eab308' : Number(position) === 2 ? '#94a3b8' : '#d97706';
+    const trophyColor = '#6366f1';
 
-    const emailSubject = isChampion
-      ? `Parabéns! O projeto ${projectName} é o vencedor do Hackathon DevMenthors!`
-      : `Parabéns! O projeto ${projectName} conquistou o ${posText} no Hackathon DevMenthors!`;
+    const emailSubject = `Parabens! O projeto ${projectName} esta entre os 3 finalistas do Hackathon DevMenthors`;
+    const emailTitle = `Seu projeto esta entre os finalistas!`;
 
-    const emailTitle = isChampion
-      ? `PARABÉNS PELO 1º LUGAR E CAMPEONATO!`
-      : `EXCELENTE CONQUISTA NO PÓDIO!`;
+    const introText = `É com imensa alegria e orgulho que a comissão organizadora comunica que o seu projeto, <strong>${projectName}</strong>, conquistou uma posição de destaque e está entre os 3 grandes finalistas do Hackathon DevMenthors!<br><br>Entre diversos projetos de altíssimo nível desenvolvidos no evento, a sua equipe demonstrou um nível excepcional de dedicação, criatividade e domínio técnico, destacando-se merecidamente entre os melhores.`;
 
-    const introText = isChampion
-      ? `É com imenso orgulho e admiração que a comissão organizadora comunica que a sua equipe alcançou o topo do pódio e consagrou-se a grande <strong>CAMPEÃ</strong> do <strong>Hackathon DevMenthors</strong>!<br><br>O projeto <strong>${projectName}</strong> se destacou de forma exemplar em todos os critérios de inovação, design e excelência técnica, superando desafios e demonstrando um nível de entrega extraordinário.`
-      : `É com imensa alegria que parabenizamos a sua equipe pelo brilhante desempenho e pela conquista da <strong>${posText}</strong> no pódio oficial do <strong>Hackathon DevMenthors</strong>!<br><br>Entre diversos projetos de altíssimo nível, o <strong>${projectName}</strong> demonstrou muita dedicação, criatividade e grande domínio técnico, garantindo merecidamente um lugar de destaque entre os melhores do evento.`;
-
-    const closingText = isChampion
-      ? `Parabéns por esta conquista memorável! Em breve nossa equipe de organização entrará em contato oficial com os detalhes da premiação principal e próximos passos.`
-      : `Agradecemos imensamente a participação e o empenho demonstrados por todos os integrantes durante todo o evento.`;
+    const closingText = `Parabens de verdade por toda a dedicacao e pelo trabalho fantastico que vocês entregaram. Agradecemos muito a energia e a participacao de cada um de vocês!`;
 
     let logoPath = path.join(__dirname, '../assets/devmenthors_LogoColor.png');
     let hasLogo = fs.existsSync(logoPath);
@@ -355,7 +344,7 @@ export class EmailService {
     .header img { height: 64px; margin-bottom: 12px; }
     .header h1 { margin: 0; color: #0f172a; font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
     .content { padding: 40px 32px; text-align: center; }
-    .trophy-badge { display: inline-block; background-color: ${isChampion ? '#fef3c7' : '#f1f5f9'}; color: ${isChampion ? '#b45309' : '#334155'}; padding: 8px 20px; border-radius: 9999px; font-weight: 800; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 20px; }
+    .trophy-badge { display: inline-block; background-color: #f1f5f9; color: #334155; padding: 8px 20px; border-radius: 9999px; font-weight: 800; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 20px; }
     .welcome-text { font-size: 22px; line-height: 1.4; color: #111827; margin-top: 0; margin-bottom: 16px; font-weight: 800; }
     .footer { background-color: #f8fafc; padding: 24px 32px; text-align: center; border-top: 1px solid #e2e8f0; }
     .footer p { margin: 0; font-size: 13px; color: #64748b; }
@@ -369,7 +358,7 @@ export class EmailService {
         <h1>Hackathon DevMenthors</h1>
       </div>
       <div class="content">
-        <div class="trophy-badge">Posição Oficial · ${posText}</div>
+        <div class="trophy-badge">Finalista do Hackathon</div>
         <h2 class="welcome-text">${emailTitle}</h2>
         <p style="font-size: 15px; line-height: 1.6; color: #4b5563; margin-bottom: 28px; text-align: left;">
           ${introText}
