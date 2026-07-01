@@ -61,4 +61,14 @@ export class EvaluationController {
       return res.status(400).json({ error: error.message });
     }
   }
+
+  static async sendTestWinnerEmail(req, res) {
+    try {
+      const { email } = req.body;
+      const result = await EvaluationService.sendTestWinnerEmail(email);
+      return res.json(result);
+    } catch (error) {
+      return res.status(400).json({ error: error.message });
+    }
+  }
 }

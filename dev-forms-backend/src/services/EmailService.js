@@ -313,7 +313,7 @@ export class EmailService {
 
     const introText = `É com imensa alegria e orgulho que a comissão organizadora comunica que o seu projeto, <strong>${projectName}</strong>, conquistou uma posição de destaque e está entre os 3 grandes finalistas do Hackathon DevMenthors!<br><br>Entre diversos projetos de altíssimo nível desenvolvidos no evento, a sua equipe demonstrou um nível excepcional de dedicação, criatividade e domínio técnico, destacando-se merecidamente entre os melhores.`;
 
-    const closingText = `Parabens de verdade por toda a dedicacao e pelo trabalho fantastico que vocês entregaram. Agradecemos muito a energia e a participacao de cada um de vocês!`;
+    const closingText = `Parabens de verdade por toda a dedicacao e pelo trabalho fantastico que vocês entregaram. Agradecemos muito a energia e a participacao de cada um de vocês!<br><br>Lembrando que a divulgação dos lugares e a premiação oficial acontecerão no dia 08/08 às 9hs na Unimar.`;
 
     let logoPath = path.join(__dirname, '../assets/devmenthors_LogoColor.png');
     let hasLogo = fs.existsSync(logoPath);
@@ -366,7 +366,7 @@ export class EmailService {
 
         ${customMessage ? `
         <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 24px; margin-bottom: 32px; text-align: left;">
-          <div style="font-size: 12px; text-transform: uppercase; color: #166534; font-weight: 800; margin-bottom: 8px; letter-spacing: 0.05em;">💬 Recado da Comissão Organizadora</div>
+          <div style="font-size: 12px; text-transform: uppercase; color: #166534; font-weight: 800; margin-bottom: 8px; letter-spacing: 0.05em;">Recado da Comissão Organizadora</div>
           <div style="font-size: 15px; color: #14532d; line-height: 1.6; white-space: pre-wrap; font-weight: 500;">${customMessage}</div>
         </div>
         ` : ''}

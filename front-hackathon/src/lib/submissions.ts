@@ -373,3 +373,22 @@ export async function sendWinnerEmail(submissionId: string | number, position: n
   return res.json();
 }
 
+export async function sendTestWinnerEmail(email: string): Promise<{ success: boolean; testPreviewUrl?: string; loggedConsole?: boolean }> {
+  const auth = loadAuth();
+  const token = auth ? auth.token : '';
+  const res = await fetch(`${getAPI()}/evaluations/send-test-winner-email`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify({ email })
+  });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => null);
+    throw new Error(errorData?.error || "Erro ao enviar e-mail de teste");
+  }
+  return res.json();
+}
+
+

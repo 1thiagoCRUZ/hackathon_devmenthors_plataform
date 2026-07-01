@@ -14,4 +14,7 @@ router.get('/ranking/:formId', authMiddleware(), EvaluationController.ranking);
 // Envio de e-mail de notificação aos vencedores (Apenas ADMIN)
 router.post('/send-winner-email', authMiddleware(['ADMIN']), EvaluationController.sendWinnerEmail);
 
+// Envio de e-mail de teste dos finalistas (Apenas ADMIN)
+router.post('/send-test-winner-email', authMiddleware(['ADMIN']), EvaluationController.sendTestWinnerEmail);
+
 export default router;

@@ -32,6 +32,16 @@ import {
   sendWinnerEmail,
   type VotingReportProject,
 } from "@/lib/submissions";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { sendTestWinnerEmail } from "@/lib/submissions";
 
 function AvaliacaoPage() {
   const [ranking, setRanking] = useState<any[]>([]);
@@ -47,6 +57,38 @@ function AvaliacaoPage() {
 
   const authUser = loadAuth();
   const isAdmin = authUser?.role === 'admin';
+
+  const [testEmailDialogOpen, setTestEmailDialogOpen] = useState(false);
+  const [testEmailAddress, setTestEmailAddress] = useState("");
+  const [sendingTest, setSendingTest] = useState(false);
+
+  const handleSendTestEmail = async () => {
+    if (!testEmailAddress.trim()) {
+      toast.error("Por favor, digite um e-mail válido.");
+      return;
+    }
+    setSendingTest(true);
+    try {
+      const result = await sendTestWinnerEmail(testEmailAddress.trim());
+      setTestEmailDialogOpen(false);
+      if (result.testPreviewUrl) {
+        toast.success(`E-mail de teste disparado para ${testEmailAddress}!`, {
+          description: `Visualização disponível no Ethereal Mail.`,
+          action: {
+            label: "Ver E-mail",
+            onClick: () => window.open(result.testPreviewUrl, "_blank"),
+          },
+          duration: 10000,
+        });
+      } else {
+        toast.success(`E-mail de teste disparado com sucesso para ${testEmailAddress}!`);
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao disparar e-mail de teste.");
+    } finally {
+      setSendingTest(false);
+    }
+  };
 
   const handleSendWinnerEmail = async (submissionId: number | string, position: number, projectName: string) => {
     setSendingWinnerId(submissionId);
@@ -242,16 +284,32 @@ function AvaliacaoPage() {
           <>
             <h2 className="mb-4 flex items-center justify-between gap-2 text-sm font-bold uppercase tracking-[0.16em] text-muted-foreground">
               <span className="flex items-center gap-2"><Trophy className="h-4 w-4" /> Ranking</span>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleRefreshRanking}
-                disabled={loading}
-                className="gap-1.5"
-              >
-                <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
-                Atualizar
-              </Button>
+              <div className="flex items-center gap-2">
+                {isAdmin && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setTestEmailAddress(authUser?.email || "");
+                      setTestEmailDialogOpen(true);
+                    }}
+                    className="gap-1.5 border-indigo-500/20 text-indigo-600 hover:bg-indigo-500/5 hover:text-indigo-700 font-semibold"
+                  >
+                    <Mail className="h-3.5 w-3.5" />
+                    Enviar E-mail de Teste
+                  </Button>
+                )}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleRefreshRanking}
+                  disabled={loading}
+                  className="gap-1.5 font-semibold"
+                >
+                  <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
+                  Atualizar
+                </Button>
+              </div>
             </h2>
 
             {loading ? (
@@ -531,6 +589,64 @@ function AvaliacaoPage() {
         title="Vote nos projetos"
         subtitle="Jurados e mentores — faça login e avalie os 3 critérios."
       />
+
+      <Dialog open={testEmailDialogOpen} onOpenChange={setTestEmailDialogOpen}>
+        <DialogContent className="sm:max-w-md rounded-2xl p-6 bg-card border-border">
+          <DialogHeader className="space-y-2">
+            <div className="inline-flex items-center gap-2 text-indigo-500 font-bold text-xs uppercase tracking-wider">
+              <Mail className="h-4 w-4" />
+              <span>Enviar E-mail de Teste</span>
+            </div>
+            <DialogTitle className="text-xl font-bold text-foreground">
+              Testar Layout do E-mail
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Digite o e-mail de destino para receber uma simulação real da mensagem que os 3 primeiros colocados vão receber.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="py-4 space-y-3">
+            <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
+              E-mail de Destino
+            </label>
+            <Input
+              type="email"
+              value={testEmailAddress}
+              onChange={(e) => setTestEmailAddress(e.target.value)}
+              placeholder="exemplo@gmail.com"
+              className="text-sm bg-background border-border focus:ring-primary rounded-xl px-3 py-2 h-10"
+            />
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => setTestEmailDialogOpen(false)}
+              disabled={sendingTest}
+              className="rounded-xl"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleSendTestEmail}
+              disabled={sendingTest || !testEmailAddress.trim()}
+              className="rounded-xl bg-primary text-primary-foreground gap-2 font-semibold"
+            >
+              {sendingTest ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Enviando...
+                </>
+              ) : (
+                <>
+                  <Send className="h-4 w-4" />
+                  Disparar Teste
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }

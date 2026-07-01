@@ -218,4 +218,16 @@ export class EvaluationService {
 
     return result;
   }
+
+  static async sendTestWinnerEmail(email) {
+    if (!email) throw new Error('E-mail do destinatário é obrigatório');
+    const result = await EmailService.sendWinnerEmail({
+      leaderEmail: email,
+      projectName: 'MarIA - FAQ (Projeto Exemplo Finalista)',
+      position: 1,
+      teamMembers: [{ name: 'Thiago Cruz' }, { name: 'DevMenthors Team' }],
+      customMessage: ''
+    });
+    return result;
+  }
 }
