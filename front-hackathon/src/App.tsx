@@ -6,6 +6,7 @@ import Avaliacao from './pages/Avaliacao';
 import Vote from './pages/Vote';
 import Permissions from './pages/Permissions';
 import UsersPage from './pages/Users';
+import ProjetosPage from './pages/Projetos';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/permissoes" element={<Permissions />} />
         <Route path="/avaliacao" element={<Avaliacao />} />
         <Route path="/vote" element={<Vote />} />
+        <Route path="/projetos" element={<ProjetosPage />} />
       </Routes>
     </BrowserRouter>
   );

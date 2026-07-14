@@ -15,6 +15,10 @@ export class EvaluationService {
     const user = await prisma.user.findUnique({ where: { id: judgeId } });
     if (!user) throw new Error('User not found');
 
+    if (!submission.form.isOpen) {
+      throw new Error('A votação está encerrada para este formulário');
+    }
+
     if (user.role === 'ADMIN' && !submission.form.adminsCanVote) {
       throw new Error('Administrators are not allowed to vote on this form');
     }

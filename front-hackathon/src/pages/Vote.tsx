@@ -310,6 +310,18 @@ function VotePage() {
               )}
             </header>
 
+            {formInfo && !formInfo.isOpen && (
+              <div className="mb-8 flex items-start gap-3 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4 text-amber-800">
+                <Lock className="h-5 w-5 shrink-0 mt-0.5 text-amber-600" />
+                <div>
+                  <p className="text-sm font-bold">Modo de Visualização (Votação Encerrada)</p>
+                  <p className="text-xs text-amber-800/80 mt-0.5 leading-relaxed">
+                    A comissão organizadora encerrou o período de votação oficial. Você pode navegar pelos projetos, abrir repositórios, assistir aos vídeos e visualizar os materiais livremente, mas o envio de novas notas está desabilitado.
+                  </p>
+                </div>
+              </div>
+            )}
+
             {!items.length && isLoading ? (
               <div className="mt-12 flex flex-col items-center justify-center space-y-4 py-10">
                 <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary/20 border-t-primary"></div>
@@ -530,6 +542,12 @@ function VotePage() {
                       <CheckCircle2 className="h-10 w-10 mb-3" />
                       <p className="font-bold">Projeto já avaliado!</p>
                       <p className="mt-1 text-xs text-green-600/80">O seu voto foi registrado com sucesso. Não é possível alterar a nota.</p>
+                    </div>
+                  ) : formInfo && !formInfo.isOpen ? (
+                    <div className="mt-4 flex flex-col items-center justify-center rounded-2xl bg-amber-500/10 p-6 text-center text-amber-800 border border-amber-500/20">
+                      <Lock className="h-10 w-10 mb-3 text-amber-600" />
+                      <p className="font-bold">Votação Encerrada!</p>
+                      <p className="mt-1 text-xs text-amber-800/80 leading-relaxed">A votação oficial para este evento foi encerrada. O painel está ativo apenas para consulta dos projetos e materiais entregues.</p>
                     </div>
                   ) : (
                     <>

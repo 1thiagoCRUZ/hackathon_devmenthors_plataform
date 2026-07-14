@@ -215,6 +215,7 @@ export async function loadSubmissions(slug: string = 'hack-2026'): Promise<Submi
   }
 }
 
+
 export async function saveSubmission(
   s: Submission,
   slug: string = 'hack-2026',

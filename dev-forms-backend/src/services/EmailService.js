@@ -85,7 +85,7 @@ export class EmailService {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Acesso ao Painel de Votação - Hackathon DevMenthors</title>
+  <title>Acesso à Galeria de Projetos - Hackathon DevMenthors</title>
   <style>
     body {
       margin: 0;
@@ -220,13 +220,13 @@ export class EmailService {
         <p class="welcome-text">Olá, <strong>${name}</strong>!</p>
         <p style="font-size: 15px; line-height: 1.6; color: #4b5563; margin-bottom: 24px;">
           Você foi cadastrado com sucesso na plataforma do <strong>Hackathon DevMenthors</strong>. 
-          Abaixo estão os seus dados de acesso para entrar e realizar a avaliação dos projetos do Hackathon.
+          Abaixo estão os seus dados de acesso para entrar e visualizar a galeria de projetos do Hackathon.
         </p>
         
         <div class="info-card">
           <div class="info-row">
             <div class="info-label">Link de Acesso</div>
-            <div class="info-value"><a href="https://avaliacao.devmenthors.com/vote" style="color: #6366f1; text-decoration: underline; font-weight: bold;">avaliacao.devmenthors.com/vote</a></div>
+            <div class="info-value"><a href="https://avaliacao.devmenthors.com/projetos" style="color: #6366f1; text-decoration: underline; font-weight: bold;">avaliacao.devmenthors.com/projetos</a></div>
           </div>
           <div class="info-row">
             <div class="info-label">E-mail</div>
@@ -243,11 +243,11 @@ export class EmailService {
         </div>
 
         <div class="btn-container">
-          <a href="https://avaliacao.devmenthors.com/vote" class="btn" target="_blank" style="color: #ffffff !important;">Acessar Painel de Votação</a>
+          <a href="https://avaliacao.devmenthors.com/projetos" class="btn" target="_blank" style="color: #ffffff !important;">Acessar Galeria de Projetos</a>
         </div>
 
         <p style="font-size: 13px; color: #9ca3af; line-height: 1.5; margin: 0; text-align: center;">
-          Guarde estas credenciais com segurança. Nos vemos nas avaliações do evento!
+          Guarde estas credenciais com segurança. Nos vemos na galeria de projetos do evento!
         </p>
       </div>
       <div class="footer">
@@ -265,7 +265,7 @@ export class EmailService {
     const mailOptions = {
       from,
       to: email,
-      subject: 'Acesso ao Painel de Votação - DevMenthors',
+      subject: 'Acesso à Galeria de Projetos - DevMenthors',
       html: htmlContent,
       attachments: hasLogo ? [
         {
